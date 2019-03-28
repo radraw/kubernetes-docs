@@ -24,6 +24,8 @@ any of the intervening steps.
 
 ## Upgrading to 1.14
 
+### CoreDNS
+
 This upgrade includes support for **CoreDNS 1.4.0**. All new deployments of
 **CDK 1.14** will install **CoreDNS** by default instead of **KubeDNS**.
 
@@ -37,8 +39,8 @@ juju config kubernetes-master dns-provider=core-dns
 ```
 
 Please be aware that changing DNS providers will momentarily interrupt DNS
-availability within the cluster. It is not necessary to recreate pods after the
-upgrade completes.
+availability within the cluster. It is not necessary to recreate pods after 
+the upgrade completes.
 
 The `enable-kube-dns` option has been removed to avoid confusion. The new
 `dns-provider` option allows you to enable or disable **KubeDNS** as needed.
@@ -47,6 +49,103 @@ For more information on the new `dns-provider config`, see the
 [dns-provider config description][dns-provider-config].
 
 <a  id="1.10"> </a>
+
+### Containerd
+
+This upgrade also includes support for the Containerd container runtime.  This
+has been achieved by creating a Containerd subordinate charm and removing the
+old Docker layer.
+
+When upgrading to 1.14, Docker will continue running as usual.  To switch to
+Containerd, you can take the following steps:
+
+#### 1. Upgrade the worker application charms:
+
+```bash
+juju upgrade-charm kubernetes-worker
+```
+
+#### 2. Deploy the new Docker subordinate:
+
+We deploy the Docker subordinate first as
+this contains the cleanup code to remove
+Docker cleanly.  Because Docker already
+exists from the previous, layered charm
+we will not actually install anything.
+
+```bash
+juju deploy docker
+```
+
+#### 3. Relate the new Docker subordinate:
+
+Add the relation will trigger the deployment.
+
+```bash
+juju add-relation docker kubernetes-worker
+```
+
+#### 4. Drain workers:
+
+Run the following command on all of your workers.
+
+```bash
+juju run-action [unit] pause --wait
+```
+
+E.g.
+
+```bash
+juju run-action kubernetes-worker/0 pause --wait
+juju run-action kubernetes-worker/1 pause --wait
+juju run-action kubernetes-worker/2 pause --wait
+```
+
+#### 5. Remove Docker relation:
+
+This will uninstall Docker from
+the workers.
+
+```bash
+juju remove-relation docker kubernetes-worker
+```
+
+#### 6. Remove Docker application:
+
+Then removethe Docker charm from
+the cluster.
+
+```bash
+juju remove-application docker
+```
+
+#### 7. Deploy Containerd subordinate:
+
+```bash
+juju deploy containerd
+```
+
+#### 8. Relate Containerd subordinate:
+
+```bash
+juju add-relation containerd kubernetes-worker
+```
+
+#### 9. Uncordon workers:
+
+Run the following command on all of your workers.
+
+```bash
+juju run-action [unit] resume --wait
+```
+
+E.g.
+
+```bash
+juju run-action kubernetes-worker/0 resume --wait
+juju run-action kubernetes-worker/1 resume --wait
+juju run-action kubernetes-worker/2 resume --wait
+```
 
 ## Upgrading from 1.9.x to 1.10.x
 
