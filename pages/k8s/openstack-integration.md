@@ -67,8 +67,36 @@ Many  pods you may wish to deploy will require storage. Although you can use any
 of storage supported by Kubernetes (see the [storage documentation][storage]), you
 also have the option to use Cinder storage volumes, if supported by your OpenStack.
 
-A `cinder` storage class will be automatically created for you when the integrator is
-used.  This storage class can then be used when creating a Persistent Volume Claim:
+First we need a storage class which can be used by Kubernetes. Newer versions
+of **CDK** will automatically create the storage class for you, or you may need
+to create it yourself. You can check whether it is already available by running:
+
+```bash
+kubectl get sc cinder
+```
+
+which should return:
+
+```bash
+NAME     PROVISIONER            AGE
+cinder   kubernetes.io/cinder   39s
+```
+
+(Note: the provisioner value may differ, depending on the version of **CDK**.)
+
+If you need to create the storage class, you can do so with:
+
+```bash
+kubectl create -f - <<EOY
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: cinder
+provisioner: kubernetes.io/cinder
+EOY
+```
+
+This storage class can then be used when creating a Persistent Volume Claim:
 
 ```bash
 kubectl create -f - <<EOY
