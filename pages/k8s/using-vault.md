@@ -91,14 +91,13 @@ unseal steps (but not the init step) before the CA can become functional again.
 
 An existing **CDK** deployment which is using Vault can easily transition to
 **Vault** simply by following the same steps as above, redeploying the same
-base bundle that you initially deployed on top of the existing deployment
-with the addition of the overlay and then following the steps to unseal
-**Vault**. This will transition all of the components of the cluster to
-the new CA and certificates (this will include restarting all of the worker
-nodes and result in a brief bit of downtime). Once that is complete, you will
-need to re-download the `kubectl` config file, since it contains the certificate
-info for connecting to the cluster.  Once you are satisfied with the state of
-the cluster, you can remove the **EasyRSA** application with:
+base bundle that you initially deployed on top of the existing deployment with
+the addition of the overlay and then following the steps to unseal **Vault**.
+This will transition all of the components of the cluster to the new CA and
+certificates. Once that is complete, you will need to re-download the `kubectl`
+config file, since it contains the certificate info for connecting to the
+cluster.  Once you are satisfied with the state of the cluster, you can remove
+the **EasyRSA** application with:
 
 ```bash
 juju remove-application easyrsa
