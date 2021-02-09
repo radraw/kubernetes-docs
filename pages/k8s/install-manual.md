@@ -322,9 +322,10 @@ overridden by an overlay. It isn't necessary to replicate the entirety of an
 entry, just the parts you wish to change. For example:
 
 ```yaml
-kubernetes-worker:
-  constraints: cores=4 mem=8G root-disk=100G
-  num_units: 6
+applications:
+  kubernetes-worker:
+    constraints: cores=4 mem=8G root-disk=100G
+    num_units: 6
 ```
 
 Changes the machine constraints for Kubernetes workers to add more root disk
